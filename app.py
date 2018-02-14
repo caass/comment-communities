@@ -1,45 +1,47 @@
 # Imports
-from random import randint
-import praw
 from functools import wraps
-from flask import Flask, request, g, request, redirect, url_for, render_template
+from random import randint
+
+from praw import Reddit
+from flask import Flask, g, redirect, render_template, request, url_for, make_response
+
 app = Flask(__name__)
 
-# State should be a global
-STATE = None
-
-#### Set up reddit stuff ####
+# Create a link and state for an OAuth2 Token
 def get_authorization_link():
     name = '/u/sombreromanjr3'
-    user_agent = 'Python comment scraper by ' + name
+    user_agent = 'PRAW comment scraper by ' + name
     redirect = 'http://localhost:5000'
-    global STATE
-    STATE = str(randint(-420,420))
+    state = str(randint(-420,420))
     with open('credentials','r') as c:
         credentials = c.read().splitlines()
     client_id = credentials[0]
     client_secret = credentials[1]
 
     # Request authorization token
-    reddit = praw.Reddit(client_id=client_id, client_secret=client_secret, redirect_uri=redirect, user_agent=user_agent, state=STATE)
-    return reddit.auth.url(['identity'], STATE, 'permanent')
+    reddit = Reddit(client_id=client_id, client_secret=client_secret, redirect_uri=redirect, user_agent=user_agent, state=state)
+    return {'state': state, 'url': reddit.auth.url(['identity'], state, 'permanent')}
 
 @app.route('/')
 def index():
-    global STATE
+
+    # Check to see if they have a state and code from reddit
     state = request.args.get('state', None)
     code = request.args.get('code', None)
-    if(code and state == STATE):
-        return render_template('index.html', code=code)
-    elif(code):
-        return render_template('failed.html', code=code, state=state, expected=STATE)
-    else:
-        return render_template('authenticate.html', auth=get_authorization_link())
 
-# def key_required(f):
-#     @wraps(f)
-#     def decorated_function(*args, **kwargs):
-#         if g.key is None:
-#             return redirect(url_for('auth', next=request.url))
-#         return f(*args, **kwargs)
-#     return decorated_function
+    # If they have a state in their cookies, check if it's the right one
+    if 'state' in request.cookies:
+        expected_state = request.cookies.get('state')
+        if(code and state == expected_state):
+            resp = make_response(render_template('index.html', code=code))
+            resp.set_cookie('state', '', expires=0)
+        elif(code):
+            resp = make_response(render_template('failed.html', code=code, state=state, expected=expected_state))
+    
+    # Otherwise, set up a request
+    else:
+        auth = get_authorization_link()
+        resp = make_response(render_template('authenticate.html', auth=auth['url']))
+        resp.set_cookie('state', auth['state'])
+
+    return resp
