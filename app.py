@@ -25,6 +25,9 @@ def get_authorization_link():
 @app.route('/')
 def index():
 
+    # Do this so you don't get 500 errors
+    resp = None
+
     # Check to see if they have a state and code from reddit
     state = request.args.get('state', None)
     code = request.args.get('code', None)
@@ -38,10 +41,11 @@ def index():
         elif(code):
             resp = make_response(render_template('failed.html', code=code, state=state, expected=expected_state))
     
-    # Otherwise, set up a request
-    else:
+    # Otherwise make 'em get authorization
+    if not resp:
         auth = get_authorization_link()
         resp = make_response(render_template('authenticate.html', auth=auth['url']))
         resp.set_cookie('state', auth['state'])
-
+    
     return resp
+        
