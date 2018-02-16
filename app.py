@@ -27,36 +27,33 @@ def generate_reddit_instance():
     reddit = Reddit(client_id=client_id, client_secret=client_secret, redirect_uri=redirect, user_agent=user_agent, state=state)
     return {'state': state, 'url': reddit.auth.url(['identity', 'read'], state, 'permanent'), 'instance': reddit}
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def index():
 
-    # If someone is accessing the page
-    if request.method == 'GET':
+    # Do this so you don't get 500 errors
+    resp = None
 
-        # Do this so you don't get 500 errors
-        resp = None
+    # Check to see if they have a state and code from reddit
+    state = request.args.get('state', None)
+    code = request.args.get('code', None)
 
-        # Check to see if they have a state and code from reddit
-        state = request.args.get('state', None)
-        code = request.args.get('code', None)
-
-        # If they have a state in their cookies, check if it's the right one
-        if 'state' in request.cookies:
-            expected_state = request.cookies.get('state')
-            if(code and state == expected_state):
-                resp = make_response(render_template('index.html', code=code))
-                resp.set_cookie('state', '', expires=0)
-                                    
-            elif(code):
-                resp = make_response(render_template('failed.html', code=code, state=state, expected=expected_state))
-        
-        # Otherwise make 'em get authorization
-        if not resp:
-            auth = generate_reddit_instance()
-            resp = make_response(render_template('authenticate.html', auth=auth['url']))
-            resp.set_cookie('state', auth['state'])
-        
-        return resp
+    # If they have a state in their cookies, check if it's the right one
+    if 'state' in request.cookies:
+        expected_state = request.cookies.get('state')
+        if(code and state == expected_state):
+            resp = make_response(render_template('index.html', code=code))
+            resp.set_cookie('state', '', expires=0)
+                                
+        elif(code):
+            resp = make_response(render_template('failed.html', code=code, state=state, expected=expected_state))
+    
+    # Otherwise make 'em get authorization
+    if not resp:
+        auth = generate_reddit_instance()
+        resp = make_response(render_template('authenticate.html', auth=auth['url']))
+        resp.set_cookie('state', auth['state'])
+    
+    return resp
 
 @socketio.on('authorization_code', namespace='/comments')
 def generate_comments(json):
