@@ -4,9 +4,24 @@ function sleep(ms) {
 
 function getNewComments( callback ){
 
+    this.gettingComments = false;
+
     this.start = async function(){
-        await sleep(1000)
-        d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', callback);
+        this.gettingComments = true;
+        while( this.gettingComments ){
+            await sleep(1000)
+            d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function(error, data){
+                if(error){
+                    throw error;
+                } else {
+                    callback(data);
+                }
+            });
+        }
+    }
+
+    this.stop = function(){
+        this.gettingComments = false;
     }
 
 }
