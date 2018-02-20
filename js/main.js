@@ -51,3 +51,9 @@ function getNewComments( callback ){
     }
 
 }
+    function snipper(obj, callback) {
+        storage{};
+        for (int i = 0; i < 100)
+            storage[i]
+
+    }
