@@ -1,3 +1,4 @@
+// Sleep for ms milliseconds
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
