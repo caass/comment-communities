@@ -51,9 +51,43 @@ function getNewComments( callback ){
     }
 
 }
-    function snipper(obj, callback) {
-        storage{};
-        for (int i = 0; i < 100)
-            storage[i]
 
+// Function to trim relevant data from raw JSON results
+function trimResponseToRelevantData( jsonResponse ){
+
+    // Create output object
+    outputObject = {
+        'after': jsonResponse['data']['after'],  // What comment do these come after
+        'comments': {}
     }
+
+    // For each comment, add the relevant data to outputObject
+    comments = jsonResponse['data']['children'];
+    comments.forEach( function( commentObject ){
+
+        outputObject['comments'][commentObject['data']['id']] = {
+
+            // Data about the comment
+            'name': commentObject['data']['name'],
+            'body': commentObject['data']['body'],
+            'body_html': commentObject['data']['body_html'],
+            'author': commentObject['data']['author'],
+            'created': commentObject['data']['created'],
+
+            // Information about the post
+            'link_id': commentObject['data']['link_id'],
+            'link_author': commentObject['data']['link_author'],
+            'link_title': commentObject['data']['link_title'],
+            'link_permalink': commentObject['data']['link_permalink'],
+            'link_url': commentObject['data']['link_url'],
+
+            // Information about the subreddit
+            'subreddit_id': commentObject['data']['subreddit_id'],
+            'subreddit': commentObject['data']['subreddit']
+            
+        };
+    });
+
+    return outputObject;
+
+}
