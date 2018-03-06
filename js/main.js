@@ -52,22 +52,23 @@ function getNewComments( callback ){
 
 }
 
-// Function to trim relevant data from raw JSON results
+// Trim relevant data from raw JSON results
 function trimResponseToRelevantData( jsonResponse ){
 
     // Create output object
     outputObject = {
         'after': jsonResponse['data']['after'],  // What comment do these come after
-        'comments': {}
+        'comments': []
     }
 
     // For each comment, add the relevant data to outputObject
     comments = jsonResponse['data']['children'];
     comments.forEach( function( commentObject ){
 
-        outputObject['comments'][commentObject['data']['id']] = {
+        outputObject['comments'].push({
 
             // Data about the comment
+            'id': commentObject['data']['id'],
             'name': commentObject['data']['name'],
             'body': commentObject['data']['body'],
             'body_html': commentObject['data']['body_html'],
@@ -85,9 +86,61 @@ function trimResponseToRelevantData( jsonResponse ){
             'subreddit_id': commentObject['data']['subreddit_id'],
             'subreddit': commentObject['data']['subreddit']
             
-        };
+        });
     });
 
     return outputObject;
 
 }
+
+// Add new comments to an array, avoiding overlap
+// NOTE: Modifies input array, AND ALSO returns a copy of input array
+function addNewCommentsToArray( newCommentsObject, commentsArray ){
+
+    // Check a comment's name
+    function getCommentName( commentObject ){
+        return commentObject['name'];
+    }
+
+    // The fastest way I can think of to add new comments to the big array
+    // is to find the comment with the "highest" name, and only add comments
+    // that have names higher than that one. The reason we can't just assume
+    // that the comments are in order is because they're not.
+    // TODO: Make this faster / more efficient
+
+    // Starting with the 'after', find the highest comment ID in commentsArray
+    afterCommentName = newCommentsObject['after']
+    for( var i = commentsArray.length - 1; i >= 0; i-- ){
+        currentCommentName = getCommentName( commentsArray[i] );
+        if ( currentCommentName > afterCommentName ){
+            afterCommentName = currentCommentName;
+        }
+    }
+
+    // Add new comments to commentsArray if they come after afterCommentName
+    newCommentsObject['comments'].forEach( function( comment ){
+
+        if( comment['name'] > afterCommentName ){
+            commentsArray.push( comment );
+        }
+    });
+
+    return commentsArray;
+
+}
+
+/*
+
+// Shows functionality of trimResponseToRelevantData and addNewCommentsToArray
+function testFunc( data ){
+
+    res = trimResponseToRelevantData( data );
+    arr = addNewCommentsToArray(res, testArray);
+    console.log(arr)
+
+
+}
+
+var testArray = [];
+
+*/
