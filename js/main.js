@@ -1,3 +1,7 @@
+/* 
+        SCRAPING / PARSING DATA RELATED FUNCTIONS
+ */
+
 // Sleep for ms milliseconds
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -144,3 +148,24 @@ function testFunc( data ){
 var testArray = [];
 
 */
+
+/*
+
+        PAGE FUNCTIONALITY RELATED
+
+*/
+
+$('#startStopButton').on('click', function(event){
+    
+    $(this).toggleClass('btn-success');
+    $(this).toggleClass('btn-danger');
+    if( $(this).hasClass('btn-success') ){
+        $(this).text('Get comments');
+    } else {
+        $(this).text('Stop getting comments');
+
+        // TODO
+        // Do something here
+        
+    }
+})
