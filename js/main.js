@@ -1,3 +1,7 @@
+/* 
+        SCRAPING / PARSING DATA RELATED FUNCTIONS
+ */
+
 // Sleep for ms milliseconds
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -144,3 +148,48 @@ function testFunc( data ){
 var testArray = [];
 
 */
+
+/*
+
+        PAGE FUNCTIONALITY RELATED
+
+*/
+
+// When the user clicks the bottom button
+$('#startStopButton').on('click', function(){
+
+    // If the user just opened the site (there's still the introduction)
+    if( $('#svg-wrap').has( 'p' ) ){
+
+        // Clear the introduction and instructions
+        $('#svg-wrap').children().fadeOut(250).promise().done(function(){
+            $('#svg-wrap').children().remove();
+                    
+            // Make the SVG wrap fill the page
+            var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
+            $('#svg-wrap').height(heightUnderNav);
+            $('#svg-wrap').css('padding', '0');
+        })
+    }
+    
+    // Toggle the button's coloration and visibility
+    $(this).toggleClass('btn-success');
+    $(this).toggleClass('btn-outline-danger');
+
+    // If the button is btn-success then it shouldn't be getting comments
+    if( $(this).hasClass('btn-success') ){
+        $(this).text('Get Comments');
+        
+        // TODO
+        // Stop getting comments
+
+    } else {
+
+        // Likewise, if not, then you should start getting comments
+        $(this).text('Stop');
+            
+        // TODO
+        // Get comments
+
+    }
+});
