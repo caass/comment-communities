@@ -2,6 +2,7 @@
         SCRAPING / PARSING DATA RELATED FUNCTIONS
  */
 
+
 // Sleep for ms milliseconds
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -90,12 +91,41 @@ function trimResponseToRelevantData( jsonResponse ){
             'subreddit_id': commentObject['data']['subreddit_id'],
             'subreddit': commentObject['data']['subreddit']
             
+
         });
     });
 
     return outputObject;
 
 }
+
+var subreddits = {};
+var setArray = [];
+function preprareUniqueArray(subreddit) {
+    global subreddits;
+    if (!(subreddits[subreddit])) {
+        subreddits[subreddit] = 0;
+        setArray.add(subreddit);
+    } 
+    subreddits[subreddit] = subreddits[subreddit] + 1;
+}
+
+
+
+function createNode(setArray, i) {
+    global subreddits;
+    global setArray;
+    var d = {
+        cluster: setArray[i],
+        radius: subreddits[setArray[i]], //TODO: possibly addd a constant
+        text: setArray[i],
+        x: 0,
+        y: 0
+    };
+    return d;
+}
+
+
 
 // Add new comments to an array, avoiding overlap
 // NOTE: Modifies input array, AND ALSO returns a copy of input array
@@ -135,17 +165,19 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 
 /*
 
+*/
 // Shows functionality of trimResponseToRelevantData and addNewCommentsToArray
+var testArray = [];
 function testFunc( data ){
 
     res = trimResponseToRelevantData( data );
     arr = addNewCommentsToArray(res, testArray);
-    console.log(arr)
+    console.log(arr);
 
 
 }
+/*
 
-var testArray = [];
 
 */
 
