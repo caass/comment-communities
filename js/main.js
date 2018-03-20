@@ -1,6 +1,17 @@
+/*
+*       Global Variables
+*/
+
+
+// Object to contain unique subreddits and count how many comments there are in that sub, e.g.
+// > subreddits;
+// > Object: {'askreddit': 10, 'iama': 5, ..., 'meirl': 1}
+var subreddits = {};
+
+
 /* 
-        SCRAPING / PARSING DATA RELATED FUNCTIONS
- */
+*       Scraping & Parsing Data
+*/
 
 
 // Sleep for ms milliseconds
@@ -8,7 +19,8 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Main constructor (?)
+// Function to get new comments, call it as a constructor i.e. var x = new getNewComments(callback)
+// Methods: start, stop, test
 function getNewComments( callback ){
 
     /*
@@ -99,34 +111,6 @@ function trimResponseToRelevantData( jsonResponse ){
 
 }
 
-var subreddits = {};
-var setArray = [];
-function preprareUniqueArray(subreddit) {
-    global subreddits;
-    if (!(subreddits[subreddit])) {
-        subreddits[subreddit] = 0;
-        setArray.add(subreddit);
-    } 
-    subreddits[subreddit] = subreddits[subreddit] + 1;
-}
-
-
-
-function createNode(setArray, i) {
-    global subreddits;
-    global setArray;
-    var d = {
-        cluster: setArray[i],
-        radius: subreddits[setArray[i]], //TODO: possibly addd a constant
-        text: setArray[i],
-        x: 0,
-        y: 0
-    };
-    return d;
-}
-
-
-
 // Add new comments to an array, avoiding overlap
 // NOTE: Modifies input array, AND ALSO returns a copy of input array
 function addNewCommentsToArray( newCommentsObject, commentsArray ){
@@ -163,9 +147,6 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 
 }
 
-/*
-
-*/
 // Shows functionality of trimResponseToRelevantData and addNewCommentsToArray
 var testArray = [];
 function testFunc( data ){
@@ -174,17 +155,55 @@ function testFunc( data ){
     arr = addNewCommentsToArray(res, testArray);
     console.log(arr);
 
-
 }
+
+
 /*
-
-
+*       Translating data into bubbles
 */
 
+
+// Given a subreddit name, increment its count in the global subreddits object
+function incrementSubredditCommentCount( sub ){
+
+    // If sub doesn't already exist within the global object, add it
+    if (!( subreddits[sub] )) {
+
+        subreddits[sub] = 1;
+
+    } else {
+
+        // Otherwise increment its count because it just got another comment
+        subreddits[sub]++;
+    }
+
+    return;
+
+}
+
+// Create a node object from the subreddits global given an index
+function createNode( i ) {
+
+    // The keys of the subreddits global are the names of all the subs
+    var subredditNames = Object.keys(subreddits);
+
+    // Create a node object
+    var d = {
+        cluster: subredditNames[i],
+        radius: subreddits[setArray[i]], // radius is equal to the count of the subreddits TODO: Scale this value so it looks better
+        text: subredditNames[i],
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0
+    };
+
+    return d;
+}
+
+
 /*
-
-        PAGE FUNCTIONALITY RELATED
-
+*       Page Functionality
 */
 
 // When the user clicks the bottom button
