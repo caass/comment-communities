@@ -1,13 +1,28 @@
+// TODO
+// 1. Do we need to store all of the comments? If we don't actually care about the contents of a comment, can't we just
+//    run incrementSubredditCommentCount and only incrementSubredditCommentCount for all the comments? We can still have
+//    the bubbles function as links to the subreddit without storing the comment data
+//    - Side note: remember the duplicating comments thing? That will still matter
+//
+// 2. If you're looking to try out the functionality in this commit (looking at you, future less tired Daniel) you need to:
+//    > var n = new getNewComments( callbackWrapper );
+//    > n.start();
+//    ...
+//    > n.stop();
+//    > subreddits;  // Returns array of subreddits
+//    > var a = createSimulation();
+//    > a.nodes();  // All nodes will have radius, x, y, vx, vy
+
 /*
 *       Global Variables
 */
 
 
-// Object to contain unique subreddits and count how many comments there are in that sub, e.g.
-// > subreddits;
-// > Object: {'askreddit': 10, 'iama': 5, ..., 'meirl': 1}
-var subreddits = {};
+// Object to contain unique subreddits and count how many comments there are in that sub, e.g. {'askreddit': 10, 'iama': 5, ..., 'meirl': 1}
+var subreddits = [];
 
+// Array to contain all comments
+var comments = [];
 
 /* 
 *       Scraping & Parsing Data
@@ -140,6 +155,9 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 
         if( comment['name'] > afterCommentName ){
             commentsArray.push( comment );
+
+            // Also, increment the subreddit count for the subreddit that this comment belongs to
+            incrementSubredditCommentCount( comment['subreddit'] );
         }
     });
 
@@ -147,13 +165,11 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 
 }
 
-// Shows functionality of trimResponseToRelevantData and addNewCommentsToArray
-var testArray = [];
-function testFunc( data ){
+// Wrapper function for trimResponseToRelevantData and addNewCommentsToArray to pass to getNewComments
+function callbackWrapper( data ){
 
-    res = trimResponseToRelevantData( data );
-    arr = addNewCommentsToArray(res, testArray);
-    console.log(arr);
+    trimmedResponse = trimResponseToRelevantData( data );
+    addNewCommentsToArray(trimmedResponse, comments);  // Adds new comments to global object
 
 }
 
@@ -163,48 +179,58 @@ function testFunc( data ){
 */
 
 
+// Check if a subreddit already exists in the global object
+function returnSubredditIndex( subredditName ){
+    for( var i = 0; i < subreddits.length; i++ ){
+        if( subreddits[i].id = subredditName ) return i;
+    }
+    return false;
+}
+
 // Given a subreddit name, increment its count in the global subreddits object
 function incrementSubredditCommentCount( sub ){
 
     // If sub doesn't already exist within the global object, add it
-    if (!( subreddits[sub] )) {
+    if (!( returnSubredditIndex( sub ) )) {
 
-        subreddits[sub] = 1;
+        subreddits.push({
+            id: sub,
+            radius: 1, // radius is equal to the count of the comments in the subreddit TODO: Scale this value so it looks better
+            x: 0,  // TODO: Randomize these?
+            y: 0,
+            vx: 0,
+            vy: 0
+
+        });
 
     } else {
 
         // Otherwise increment its count because it just got another comment
-        subreddits[sub]++;
+        subreddits[ returnSubredditIndex( sub ) ]['radius']++;
     }
 
     return;
 
 }
 
-// Create a node object from the subreddits global given an index
-function createNode( i ) {
+// Create a D3 force simulation from the subreddits global
+function createSimulation(){
 
-    // The keys of the subreddits global are the names of all the subs
-    var subredditNames = Object.keys(subreddits);
+    // Create the force simulation
+    var force = d3.forceSimulation()
+            .nodes( subreddits )
+            .force('attraction', d3.forceManyBody().strength(30))
+            .force('center', d3.forceCenter())
+            .force('collide', d3.forceCollide(function(d){return d.radius}));
 
-    // Create a node object
-    var d = {
-        cluster: subredditNames[i],
-        radius: subreddits[setArray[i]], // radius is equal to the count of the subreddits TODO: Scale this value so it looks better
-        text: subredditNames[i],
-        x: 0,
-        y: 0,
-        vx: 0,
-        vy: 0
-    };
-
-    return d;
+    return force;
 }
 
 
 /*
 *       Page Functionality
 */
+
 
 // When the user clicks the bottom button
 $('#startStopButton').on('click', function(){
@@ -220,7 +246,7 @@ $('#startStopButton').on('click', function(){
             var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
             $('#svg-wrap').height(heightUnderNav);
             $('#svg-wrap').css('padding', '0');
-        })
+        });
     }
     
     // Toggle the button's coloration and visibility
@@ -231,16 +257,14 @@ $('#startStopButton').on('click', function(){
     if( $(this).hasClass('btn-success') ){
         $(this).text('Get Comments');
         
-        // TODO
-        // Stop getting comments
+        // TODO: Stop getting comments
 
     } else {
 
         // Likewise, if not, then you should start getting comments
         $(this).text('Stop');
             
-        // TODO
-        // Get comments
+        // TODO: Get comments
 
     }
 });
