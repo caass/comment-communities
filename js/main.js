@@ -231,6 +231,20 @@ function createSimulation(){
 *       Page Functionality
 */
 
+// Returns a string formatted for viewBox
+function getSvgWrapDimensionsForViewBox(){
+
+    // Get the SVG Wrap's dimensions
+    var h = $('#svg-wrap').height();
+    var w = $('#svg-wrap').width();
+
+    // The minimum x and y values should be negative 1/2 * height and width
+    var minx = Math.round( -0.5 * w);
+    var miny = Math.round( -0.5 * h);
+
+    // Return a string formatted for viewBox: min-x, min-y, width, height
+    return minx + ' ' + miny + ' ' + w + ' ' + h;
+}
 
 // When the user clicks the bottom button
 $('#startStopButton').on('click', function(){
@@ -246,6 +260,11 @@ $('#startStopButton').on('click', function(){
             var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
             $('#svg-wrap').height(heightUnderNav);
             $('#svg-wrap').css('padding', '0');
+
+            // Add an svg element to fill the spot (using D3, because jQuery apparently passes .css as lowercase)
+            d3.select('#svg-wrap').append('svg')
+                .attr('viewBox', getSvgWrapDimensionsForViewBox())
+                .attr('preserveAspectRatio', 'xMinYMin meet');
         });
     }
     
@@ -267,4 +286,14 @@ $('#startStopButton').on('click', function(){
         // TODO: Get comments
 
     }
+});
+
+$(window).on('resize', function(){
+
+    // Set the height for the wrapper
+    var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
+    $('#svg-wrap').height(heightUnderNav);
+
+    // Update the SVG viewBox
+    d3.select('svg').attr('viewBox', getSvgWrapDimensionsForViewBox())
 });
