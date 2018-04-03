@@ -266,8 +266,9 @@ $('#startStopButton').on('click', function(){
 
             // Initial simulation setup
             simulation
-                .force('attract', d3.forceManyBody().strength(30))  // Attractive force for nodes
-                .force('center', d3.forceCenter(0, 0))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
+                .force('attract', d3.forceManyBody().strength(-20))  // Attractive force for nodes
+                .force('centerX', d3.forceX(0).strength(.4))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
+                .force('centerY', d3.forceY(0).strength(.4))
                 .force('collide', d3.forceCollide( function(d){ return d.radius; }));  // Collision
 
             // Create a data enter for bubbles
