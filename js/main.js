@@ -17,12 +17,17 @@
 *       Global Variables
 */
 
-
 // Object to contain unique subreddits and count how many comments there are in that sub, e.g. {'askreddit': 10, 'iama': 5, ..., 'meirl': 1}
 var subreddits = [];
 
 // Array to contain all comments
 var comments = [];
+
+// Globally accessible instance of a comment fetcher
+var commentGetter = new getNewComments( callbackWrapper );
+
+// Force simulation
+var simulation = d3.forceSimulation();
 
 /* 
 *       Scraping & Parsing Data
@@ -195,7 +200,7 @@ function incrementSubredditCommentCount( sub ){
 
         subreddits.push({
             id: sub,
-            radius: 1, // radius is equal to the count of the comments in the subreddit TODO: Scale this value so it looks better
+            radius: 5, // radius is equal to the count of the comments in the subreddit TODO: Scale this value so it looks better
             x: 0,  // TODO: Randomize these?
             y: 0,
             vx: 0,
@@ -206,24 +211,11 @@ function incrementSubredditCommentCount( sub ){
     } else {
 
         // Otherwise increment its count because it just got another comment
-        subreddits[ returnSubredditIndex( sub ) ]['radius']++;
+        subreddits[ returnSubredditIndex( sub ) ]['radius'] += 1;
     }
 
     return;
 
-}
-
-// Create a D3 force simulation from the subreddits global
-function createSimulation(){
-
-    // Create the force simulation
-    var force = d3.forceSimulation()
-            .nodes( subreddits )
-            .force('attraction', d3.forceManyBody().strength(30))
-            .force('center', d3.forceCenter())
-            .force('collide', d3.forceCollide(function(d){return d.radius}));
-
-    return force;
 }
 
 
@@ -265,6 +257,60 @@ $('#startStopButton').on('click', function(){
             d3.select('#svg-wrap').append('svg')
                 .attr('viewBox', getSvgWrapDimensionsForViewBox())
                 .attr('preserveAspectRatio', 'xMinYMin meet');
+
+            // Create the skeleton of the visualization, to put content in later
+            // Based off of https://bl.ocks.org/mbostock/4062045
+
+            var svg = d3.select('svg');
+            var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+            // Initial simulation setup
+            simulation
+                .force('attract', d3.forceManyBody().strength(30))  // Attractive force for nodes
+                .force('center', d3.forceCenter(0, 0))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
+                .force('collide', d3.forceCollide( function(d){ return d.radius; }));  // Collision
+
+            // Create a data enter for bubbles
+            var bubble = svg.append('g')
+                .attr('class', 'bubbles')
+              .selectAll('circle')
+              .data(subreddits)
+              .enter().append('circle')
+                .attr('r', function(d) { return d.radius; })
+                .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+
+                // Drag functionality
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            // Set the nodes for the simulation and also the tick behavior (update bubbles position)
+            simulation
+                .nodes( subreddits )
+                .on('tick', function(e){ 
+                    bubble
+                        .attr("cx", function(d) { return d.x; })
+                        .attr("cy", function(d) { return d.y; });
+                });
+
+            // Drag functionality
+            function dragstarted(d) {
+                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+                }
+                
+                function dragged(d) {
+                d.fx = d3.event.x;
+                d.fy = d3.event.y;
+                }
+                
+                function dragended(d) {
+                if (!d3.event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+                }
         });
     }
     
@@ -276,14 +322,14 @@ $('#startStopButton').on('click', function(){
     if( $(this).hasClass('btn-success') ){
         $(this).text('Get Comments');
         
-        // TODO: Stop getting comments
+        commentGetter.stop();
 
     } else {
 
         // Likewise, if not, then you should start getting comments
         $(this).text('Stop');
             
-        // TODO: Get comments
+        commentGetter.start();
 
     }
 });
