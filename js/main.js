@@ -345,3 +345,12 @@ $(window).on('resize', function(){
     // Update the SVG viewBox
     d3.select('svg').attr('viewBox', getSvgWrapDimensionsForViewBox())
 });
+
+// Reset the visualization when "reset visualization" is clicked
+$('.reset-visualization').on('click', function(){
+
+    // Clear the subreddits and comments data
+    subreddits = [];
+    comments = [];
+
+})

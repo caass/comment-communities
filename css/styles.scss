@@ -5,9 +5,16 @@ button {
         text-decoration: none;
         color: inherit;
     }
+
 }
 
 body,
 html {
     height: 100%;
+}
+
+.nav-link{
+
+    cursor: pointer;
+    
 }
