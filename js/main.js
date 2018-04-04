@@ -335,6 +335,7 @@ $('#startStopButton').on('click', function(){
     }
 });
 
+// Resize the SVG when the window is resized
 $(window).on('resize', function(){
 
     // Set the height for the wrapper
