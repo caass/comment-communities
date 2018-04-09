@@ -29,7 +29,7 @@ var commentGetter = new getNewComments( callbackWrapper );
 // Force simulation
 var simulation = d3.forceSimulation();
 
-/* 
+/*
 *       Scraping & Parsing Data
 */
 
@@ -122,7 +122,7 @@ function trimResponseToRelevantData( jsonResponse ){
             // Information about the subreddit
             'subreddit_id': commentObject['data']['subreddit_id'],
             'subreddit': commentObject['data']['subreddit']
-            
+
 
         });
     });
@@ -187,7 +187,7 @@ function callbackWrapper( data ){
 // Check if a subreddit already exists in the global object
 function returnSubredditIndex( subredditName ){
     for( var i = 0; i < subreddits.length; i++ ){
-        if( subreddits[i].id = subredditName ) return i;
+        if( subreddits[i].id === subredditName ) return i;
     }
     return false;
 }
@@ -247,7 +247,7 @@ $('#startStopButton').on('click', function(){
         // Clear the introduction and instructions
         $('#svg-wrap').children().fadeOut(250).promise().done(function(){
             $('#svg-wrap').children().remove();
-                    
+
             // Make the SVG wrap fill the page
             var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
             $('#svg-wrap').height(heightUnderNav);
@@ -279,7 +279,11 @@ $('#startStopButton').on('click', function(){
               .enter().append('circle')
                 .attr('r', function(d) { return d.radius; })
                 .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+<<<<<<< HEAD
                 .attr('subreddit', function(d) { return d.id; })  // Give the buble a "subreddit" attribute with the subreddit id
+=======
+                .attr("subreddit", function(d) { return d.id})
+>>>>>>> ebcdbc7fc1126a5ecf36a6903a07ead9f3e2c4bd
 
                 // Drag functionality
                 .call(d3.drag()
@@ -290,7 +294,7 @@ $('#startStopButton').on('click', function(){
             // Set the nodes for the simulation and also the tick behavior (update bubbles position)
             simulation
                 .nodes( subreddits )
-                .on('tick', function(e){ 
+                .on('tick', function(e){
                     bubble
                         .attr("cx", function(d) { return d.x; })
                         .attr("cy", function(d) { return d.y; });
@@ -302,12 +306,12 @@ $('#startStopButton').on('click', function(){
                 d.fx = d.x;
                 d.fy = d.y;
                 }
-                
+
                 function dragged(d) {
                 d.fx = d3.event.x;
                 d.fy = d3.event.y;
                 }
-                
+
                 function dragended(d) {
                 if (!d3.event.active) simulation.alphaTarget(0);
                 d.fx = null;
@@ -315,7 +319,7 @@ $('#startStopButton').on('click', function(){
                 }
         });
     }
-    
+
     // Toggle the button's coloration and visibility
     $(this).toggleClass('btn-success');
     $(this).toggleClass('btn-outline-danger');
@@ -323,14 +327,14 @@ $('#startStopButton').on('click', function(){
     // If the button is btn-success then it shouldn't be getting comments
     if( $(this).hasClass('btn-success') ){
         $(this).text('Get Comments');
-        
+
         commentGetter.stop();
 
     } else {
 
         // Likewise, if not, then you should start getting comments
         $(this).text('Stop');
-            
+
         commentGetter.start();
 
     }
