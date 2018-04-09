@@ -271,7 +271,7 @@ $('#startStopButton').on('click', function(){
                 .force('centerY', d3.forceY(0).strength(.4))
                 .force('collide', d3.forceCollide( function(d){ return d.radius; }));  // Collision
 
-            // Create a data enter for bubbles
+            // Create a data join for bubbles
             var bubble = svg.append('g')
                 .attr('class', 'bubbles')
               .selectAll('circle')
@@ -279,6 +279,7 @@ $('#startStopButton').on('click', function(){
               .enter().append('circle')
                 .attr('r', function(d) { return d.radius; })
                 .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+                .attr('subreddit', function(d) { return d.id; })  // Give the buble a "subreddit" attribute with the subreddit id
 
                 // Drag functionality
                 .call(d3.drag()
@@ -352,5 +353,8 @@ $('.reset-visualization').on('click', function(){
     // Clear the subreddits and comments data
     subreddits = [];
     comments = [];
+
+    // TODO: Also make the SVG empty? maybe my forcing the simulation to update?
+    simulation.restart();
 
 })
