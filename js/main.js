@@ -279,11 +279,7 @@ $('#startStopButton').on('click', function(){
               .enter().append('circle')
                 .attr('r', function(d) { return d.radius; })
                 .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
-<<<<<<< HEAD
                 .attr('subreddit', function(d) { return d.id; })  // Give the buble a "subreddit" attribute with the subreddit id
-=======
-                .attr("subreddit", function(d) { return d.id})
->>>>>>> ebcdbc7fc1126a5ecf36a6903a07ead9f3e2c4bd
 
                 // Drag functionality
                 .call(d3.drag()
