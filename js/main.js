@@ -186,9 +186,15 @@ function callbackWrapper(data) {
 
 
 // Check if a subreddit already exists in the global object
+<<<<<<< HEAD
 function returnSubredditIndex(subredditName) {
     for (var i = 0; i < subreddits.length; i++) {
         if (subreddits[i].id === subredditName) return i;
+=======
+function returnSubredditIndex( subredditName ){
+    for( var i = 0; i < subreddits.length; i++ ){
+        if( subreddits[i].id === subredditName ) return i;
+>>>>>>> master
     }
     return false;
 }
@@ -277,6 +283,7 @@ $('#startStopButton').on('click', function () {
             // Create a data join for bubbles
             var bubble = svg.append('g')
                 .attr('class', 'bubbles')
+<<<<<<< HEAD
                 .selectAll('circle')
                 .data(subreddits)
                 .enter()
@@ -294,6 +301,14 @@ $('#startStopButton').on('click', function () {
                 .attr('r', function (d) { return d.radius; })
                 .attr("fill", function (d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
 
+=======
+              .selectAll('circle')
+              .data(subreddits)
+              .enter().append('circle')
+                .attr('r', function(d) { return d.radius; })
+                .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+                .attr('subreddit', function(d) { return d.id; })  // Give the buble a "subreddit" attribute with the subreddit id
+>>>>>>> master
 
                 // Drag functionality
                 .call(d3.drag()
@@ -306,8 +321,13 @@ $('#startStopButton').on('click', function () {
 
             // Set the nodes for the simulation and also the tick behavior (update bubbles position)
             simulation
+<<<<<<< HEAD
                 .nodes(subreddits)
                 .on('tick', function (e) {
+=======
+                .nodes( subreddits )
+                .on('tick', function(e){
+>>>>>>> master
                     bubble
                         .attr("cx", function (d) { return d.x; })
                         .attr("cy", function (d) { return d.y; });
@@ -318,6 +338,7 @@ $('#startStopButton').on('click', function () {
                 if (!d3.event.active) simulation.alphaTarget(0.3).restart();
                 d.fx = d.x;
                 d.fy = d.y;
+<<<<<<< HEAD
             }
 
             function dragged(d) {
@@ -326,6 +347,16 @@ $('#startStopButton').on('click', function () {
             }
 
             function dragended(d) {
+=======
+                }
+
+                function dragged(d) {
+                d.fx = d3.event.x;
+                d.fy = d3.event.y;
+                }
+
+                function dragended(d) {
+>>>>>>> master
                 if (!d3.event.active) simulation.alphaTarget(0);
                 d.fx = null;
                 d.fy = null;
@@ -375,6 +406,7 @@ $('.reset-visualization').on('click', function () {
     simulation.restart();
 
 })
+<<<<<<< HEAD
 
 // Popover the bubble information when they're clicked
 function generatePopoverContents(d) {
@@ -416,3 +448,5 @@ $('body').on('click', function (e) {
         }
     });
 });
+=======
+>>>>>>> master
