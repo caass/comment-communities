@@ -215,10 +215,10 @@ $('#startStopButton').on('click', function () {
 
             // Initial simulation setup
             simulation
-                .force('repel', d3.forceManyBody().strength(-10))  // Make the nodes repel each other
+                .force('repel', d3.forceManyBody().strength(-15))  // Make the nodes repel each other
                 .force('centerX', d3.forceX(0).strength(.3))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
                 .force('centerY', d3.forceY(0).strength(.3))
-                .force('collide', d3.forceCollide(function (d) { return d.radius + 1; }));  // Collision
+                .force('collide', d3.forceCollide(function (d) { return d.radius + Math.round(Math.sqrt(d.radius) / 2); }));  // Collision
 
             // Create a data join for bubbles
             var bubble = svg.append('g')
