@@ -18,3 +18,16 @@ html {
     cursor: pointer;
     
 }
+
+.popover-body {
+
+    height: auto;
+
+    ul {
+
+        max-height: 350px;
+        overflow-y: auto;
+
+    }
+
+}

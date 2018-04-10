@@ -9,3 +9,9 @@ html {
 
 .nav-link {
   cursor: pointer; }
+
+.popover-body {
+  height: auto; }
+  .popover-body ul {
+    max-height: 350px;
+    overflow-y: auto; }

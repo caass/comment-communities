@@ -1,34 +1,3 @@
-// TODO
-// 1. Do we need to store all of the comments? If we don't actually care about the contents of a comment, can't we just
-//    run incrementSubredditCommentCount and only incrementSubredditCommentCount for all the comments? We can still have
-//    the bubbles function as links to the subreddit without storing the comment data
-//    - Side note: remember the duplicating comments thing? That will still matter
-//
-// 2. If you're looking to try out the functionality in this commit (looking at you, future less tired Daniel) you need to:
-//    > var n = new getNewComments( callbackWrapper );
-//    > n.start();
-//    ...
-//    > n.stop();
-//    > subreddits;  // Returns array of subreddits
-//    > var a = createSimulation();
-//    > a.nodes();  // All nodes will have radius, x, y, vx, vy
-
-/*
-*       Global Variables
-*/
-
-// Object to contain unique subreddits and count how many comments there are in that sub, e.g. {'askreddit': 10, 'iama': 5, ..., 'meirl': 1}
-var subreddits = [];
-
-// Array to contain all comments
-var comments = [];
-
-// Globally accessible instance of a comment fetcher
-var commentGetter = new getNewComments(callbackWrapper);
-
-// Force simulation
-var simulation = d3.forceSimulation();
-
 /*
 *       Scraping & Parsing Data
 */
@@ -39,23 +8,25 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Function to get new comments, call it as a constructor i.e. var x = new getNewComments(callback)
-// Methods: start, stop, test
-function getNewComments(callback) {
+// Class to get new comments
+class getNewComments {
 
     /*
     * Attributes
     */
 
-    // Boolean: Are you currently getting comments?
-    this.gettingComments = false;
+    constructor(callback) {
+        this.gettingComments = false;   // Are you currently getting comments?
+        this.callback = callback;       // Callback function to pass to .start() and .stop()
+    }
 
     /*
     * Methods
     */
 
     // Continuously get comments on a one-second interval so long as this.gettingComments
-    this.start = async function () {
+    async start() {
+        let callback = this.callback;
         this.gettingComments = true;
         while (this.gettingComments) {
             await sleep(1000)
@@ -70,13 +41,14 @@ function getNewComments(callback) {
     }
 
     // Set this.gettingComments to false, which stops .start()
-    this.stop = function () {
+    stop() {
         this.gettingComments = false;
     }
 
     // Get comments once to make sure everything is working
-    this.test = function () {
+    test() {
         console.log('Getting new comments...');
+        let callback = this.callback
         d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function (error, data) {
             if (error) {
                 throw error;
@@ -106,22 +78,11 @@ function trimResponseToRelevantData(jsonResponse) {
 
             // Data about the comment
             'id': commentObject['data']['id'],
-            'name': commentObject['data']['name'],
             'body': commentObject['data']['body'],
-            'body_html': commentObject['data']['body_html'],
             'author': commentObject['data']['author'],
-            'created': commentObject['data']['created'],
             'link': commentObject['data']['permalink'],
 
-            // Information about the post
-            'link_id': commentObject['data']['link_id'],
-            'link_author': commentObject['data']['link_author'],
-            'link_title': commentObject['data']['link_title'],
-            'link_permalink': commentObject['data']['link_permalink'],
-            'link_url': commentObject['data']['link_url'],
-
             // Information about the subreddit
-            'subreddit_id': commentObject['data']['subreddit_id'],
             'subreddit': commentObject['data']['subreddit']
 
 
@@ -132,42 +93,71 @@ function trimResponseToRelevantData(jsonResponse) {
 
 }
 
-// Add new comments to an array, avoiding overlap
-// NOTE: Modifies input array, AND ALSO returns a copy of input array
-function addNewCommentsToArray(newCommentsObject, commentsArray) {
+// Add new comments to their appropraite sub in the subreddits global
+function addNewCommentsToArray(newCommentsObject) {
 
-    // Check a comment's name
-    function getCommentName(commentObject) {
-        return commentObject['name'];
+    // Check which subreddit a comment belongs to
+    function getCommentSubreddit(commentObject) {
+        return commentObject['subreddit'];
     }
 
-    // The fastest way I can think of to add new comments to the big array
-    // is to find the comment with the "highest" name, and only add comments
-    // that have names higher than that one. The reason we can't just assume
-    // that the comments are in order is because they're not.
-    // TODO: Make this faster / more efficient
-
-    // Starting with the 'after', find the highest comment ID in commentsArray
-    afterCommentName = newCommentsObject['after']
-    for (var i = commentsArray.length - 1; i >= 0; i--) {
-        currentCommentName = getCommentName(commentsArray[i]);
-        if (currentCommentName > afterCommentName) {
-            afterCommentName = currentCommentName;
+    // Check if a subreddit already exists in the global object. If it does, return its index.
+    function getSubredditIndex(subredditName) {
+        for (var i = 0; i < subreddits.length; i++) {
+            if (subreddits[i].id === subredditName) return i;
         }
+        return false;
     }
 
-    // Add new comments to commentsArray if they come after afterCommentName
+    // Generate a random color from D3 Palette
+    let color = d3.scaleOrdinal(d3.schemeCategory20);
+    function randomColor(){      
+        return color(Math.floor(Math.random() * 20));
+    }
+
+    // Add the new comment to its appropriate subreddit if it doesn't already exist
     newCommentsObject['comments'].forEach(function (comment) {
 
-        if (comment['name'] > afterCommentName) {
-            commentsArray.push(comment);
+        // If sub doesn't already exist within the global object, add it
+        let subIndex = getSubredditIndex(comment.subreddit);
+        if (!(subIndex)) {
 
-            // Also, increment the subreddit count for the subreddit that this comment belongs to
-            incrementSubredditCommentCount(comment['subreddit'], comment);
+            subreddits.push({
+                id: comment.subreddit,
+                radius: 3,
+                comments: [comment],
+                color: randomColor(),
+                x: 0,  // TODO: Randomize these?
+                y: 0,
+                vx: 0,
+                vy: 0
+
+            });
+
+        } else {
+
+            let commentExists = false;
+
+            // Iterate over each comment in the subreddit
+            for (let i = 0; i < subreddits[subIndex].comments.length; i++) {
+
+                // Check to see if this comment has the same ID as the incoming comment
+                if (subreddits[subIndex].comments[i].id === comment.id) {
+
+                    commentExists = true;
+                }
+
+            }
+
+            // If you've checked every comment and none of them have the same ID, then add the new one
+            if (!(commentExists)) {
+                subreddits[subIndex].radius += 1;
+                subreddits[subIndex].comments.push(comment);
+            }
+
         }
-    });
 
-    return commentsArray;
+    });
 
 }
 
@@ -175,52 +165,9 @@ function addNewCommentsToArray(newCommentsObject, commentsArray) {
 function callbackWrapper(data) {
 
     trimmedResponse = trimResponseToRelevantData(data);
-    addNewCommentsToArray(trimmedResponse, comments);  // Adds new comments to global object
+    addNewCommentsToArray(trimmedResponse);
 
 }
-
-
-/*
-*       Translating data into bubbles
-*/
-
-
-// Check if a subreddit already exists in the global object
-function returnSubredditIndex(subredditName) {
-    for (var i = 0; i < subreddits.length; i++) {
-        if (subreddits[i].id === subredditName) return i;
-    }
-    return false;
-}
-
-// Given a subreddit name, increment its count in the global subreddits object
-function incrementSubredditCommentCount(sub, comment) {
-
-    // If sub doesn't already exist within the global object, add it
-    if (!(returnSubredditIndex(sub))) {
-
-        subreddits.push({
-            id: sub,
-            radius: 5,
-            comments: [comment],
-            x: 0,  // TODO: Randomize these?
-            y: 0,
-            vx: 0,
-            vy: 0
-
-        });
-
-    } else {
-
-        // Otherwise increment its count because it just got another comment
-        subreddits[returnSubredditIndex(sub)]['radius'] += 1;
-        subreddits[returnSubredditIndex(sub)]['comments'].push(comment);
-    }
-
-    return;
-
-}
-
 
 /*
 *       Page Functionality
@@ -265,13 +212,12 @@ $('#startStopButton').on('click', function () {
             // Based off of https://bl.ocks.org/mbostock/4062045
 
             var svg = d3.select('svg');
-            var color = d3.scaleOrdinal(d3.schemeCategory20);
 
             // Initial simulation setup
             simulation
-                .force('attract', d3.forceManyBody().strength(-20))  // Attractive force for nodes
-                .force('centerX', d3.forceX(0).strength(.25))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
-                .force('centerY', d3.forceY(0).strength(.25))
+                .force('repel', d3.forceManyBody().strength(-10))  // Make the nodes repel each other
+                .force('centerX', d3.forceX(0).strength(.3))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
+                .force('centerY', d3.forceY(0).strength(.3))
                 .force('collide', d3.forceCollide(function (d) { return d.radius + 1; }));  // Collision
 
             // Create a data join for bubbles
@@ -292,7 +238,7 @@ $('#startStopButton').on('click', function () {
                 // Put circles inside the links with some radius and color
                 .append('circle')
                 .attr('r', function (d) { return d.radius; })
-                .attr("fill", function (d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+                .attr("fill", function (d) { return d.color; })
 
 
                 // Drag functionality
@@ -367,9 +313,8 @@ $(window).on('resize', function () {
 // Reset the visualization when "reset visualization" is clicked
 $('.reset-visualization').on('click', function () {
 
-    // Clear the subreddits and comments data
+    // Clear the subreddit data
     subreddits = [];
-    comments = [];
 
     // TODO: Also make the SVG empty? maybe my forcing the simulation to update?
     simulation.restart();
@@ -416,3 +361,16 @@ $('body').on('click', function (e) {
         }
     });
 });
+
+/*
+*       Global Variables
+*/
+
+// Object to contain unique subreddits and the comments belonging to each
+var subreddits = [];
+
+// Globally accessible instance of a comment fetcher
+var commentGetter = new getNewComments(callbackWrapper);
+
+// Force simulation
+var simulation = d3.forceSimulation();
