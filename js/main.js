@@ -111,6 +111,7 @@ function trimResponseToRelevantData(jsonResponse) {
             'body_html': commentObject['data']['body_html'],
             'author': commentObject['data']['author'],
             'created': commentObject['data']['created'],
+            'link': commentObject['data']['permalink'],
 
             // Information about the post
             'link_id': commentObject['data']['link_id'],
@@ -162,7 +163,7 @@ function addNewCommentsToArray(newCommentsObject, commentsArray) {
             commentsArray.push(comment);
 
             // Also, increment the subreddit count for the subreddit that this comment belongs to
-            incrementSubredditCommentCount(comment['subreddit']);
+            incrementSubredditCommentCount(comment['subreddit'], comment);
         }
     });
 
@@ -193,14 +194,15 @@ function returnSubredditIndex(subredditName) {
 }
 
 // Given a subreddit name, increment its count in the global subreddits object
-function incrementSubredditCommentCount(sub) {
+function incrementSubredditCommentCount(sub, comment) {
 
     // If sub doesn't already exist within the global object, add it
     if (!(returnSubredditIndex(sub))) {
 
         subreddits.push({
             id: sub,
-            radius: 5, // radius is equal to the count of the comments in the subreddit TODO: Scale this value so it looks better
+            radius: 5,
+            comments: [comment],
             x: 0,  // TODO: Randomize these?
             y: 0,
             vx: 0,
@@ -212,6 +214,7 @@ function incrementSubredditCommentCount(sub) {
 
         // Otherwise increment its count because it just got another comment
         subreddits[returnSubredditIndex(sub)]['radius'] += 1;
+        subreddits[returnSubredditIndex(sub)]['comments'].push(comment);
     }
 
     return;
@@ -375,11 +378,36 @@ $('.reset-visualization').on('click', function () {
 
 // Popover the bubble information when they're clicked
 function generatePopoverContents(d) {
-    return "hello hi aoijfeaoiejf aoisejf oisaj feoij fiofj eoif jaeoif jaseoif jesiof sjoef oisefj soifj soifj soief jsoif jsofi jsoif jseoif jseo isje "
+
+    // Create an output string to add content to
+    var outputText = '';
+
+    // Pull out the comments
+    var comments = d.comments;
+
+    // Add to the output text to make some useful information about the subreddit
+    outputText += '<p class="lead mb-1">' + comments.length + ' comment' + (comments.length === 1 ? '' : 's') + ' so far.</p><ul class="list-unstyled">';
+
+    // Add list items for each comment
+    comments.forEach(function (comment) {
+
+        // Add a new list element with a link to the comment
+        outputText += '<li><a target="_blank" href="https://reddit.com' + comment.link + '">';
+
+        // Add the first three words of the comment  TODO: Only put an ellipsis if there's more than 3 words in the comment.
+        outputText += comment.body.split(' ').slice(0, 3).join(' ') + '...';
+
+        // Close the link and list item
+        outputText += '</a></li>';
+
+    });
+
+    // Close the list and return the HTML string
+    return outputText + '</ul>';
+
 }
 
-// Remove popovers when the user clicks outside of one
-// https://stackoverflow.com/a/20468809/6894799
+// Remove popovers when the user clicks outside of one -- https://stackoverflow.com/a/20468809/6894799
 $('body').on('click', function (e) {
     $('[data-toggle=popover]').each(function () {
         // hide any open popovers when the anywhere else in the body is clicked
