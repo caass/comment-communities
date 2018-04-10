@@ -24,7 +24,7 @@ var subreddits = [];
 var comments = [];
 
 // Globally accessible instance of a comment fetcher
-var commentGetter = new getNewComments( callbackWrapper );
+var commentGetter = new getNewComments(callbackWrapper);
 
 // Force simulation
 var simulation = d3.forceSimulation();
@@ -41,7 +41,7 @@ function sleep(ms) {
 
 // Function to get new comments, call it as a constructor i.e. var x = new getNewComments(callback)
 // Methods: start, stop, test
-function getNewComments( callback ){
+function getNewComments(callback) {
 
     /*
     * Attributes
@@ -55,12 +55,12 @@ function getNewComments( callback ){
     */
 
     // Continuously get comments on a one-second interval so long as this.gettingComments
-    this.start = async function(){
+    this.start = async function () {
         this.gettingComments = true;
-        while( this.gettingComments ){
+        while (this.gettingComments) {
             await sleep(1000)
-            d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function(error, data){
-                if(error){
+            d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function (error, data) {
+                if (error) {
                     throw error;
                 } else {
                     callback(data);
@@ -70,15 +70,15 @@ function getNewComments( callback ){
     }
 
     // Set this.gettingComments to false, which stops .start()
-    this.stop = function(){
+    this.stop = function () {
         this.gettingComments = false;
     }
 
     // Get comments once to make sure everything is working
-    this.test = function(){
+    this.test = function () {
         console.log('Getting new comments...');
-        d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function(error, data){
-            if(error){
+        d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function (error, data) {
+            if (error) {
                 throw error;
             } else {
                 callback(data);
@@ -90,7 +90,7 @@ function getNewComments( callback ){
 }
 
 // Trim relevant data from raw JSON results
-function trimResponseToRelevantData( jsonResponse ){
+function trimResponseToRelevantData(jsonResponse) {
 
     // Create output object
     outputObject = {
@@ -100,7 +100,7 @@ function trimResponseToRelevantData( jsonResponse ){
 
     // For each comment, add the relevant data to outputObject
     comments = jsonResponse['data']['children'];
-    comments.forEach( function( commentObject ){
+    comments.forEach(function (commentObject) {
 
         outputObject['comments'].push({
 
@@ -133,10 +133,10 @@ function trimResponseToRelevantData( jsonResponse ){
 
 // Add new comments to an array, avoiding overlap
 // NOTE: Modifies input array, AND ALSO returns a copy of input array
-function addNewCommentsToArray( newCommentsObject, commentsArray ){
+function addNewCommentsToArray(newCommentsObject, commentsArray) {
 
     // Check a comment's name
-    function getCommentName( commentObject ){
+    function getCommentName(commentObject) {
         return commentObject['name'];
     }
 
@@ -148,21 +148,21 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 
     // Starting with the 'after', find the highest comment ID in commentsArray
     afterCommentName = newCommentsObject['after']
-    for( var i = commentsArray.length - 1; i >= 0; i-- ){
-        currentCommentName = getCommentName( commentsArray[i] );
-        if ( currentCommentName > afterCommentName ){
+    for (var i = commentsArray.length - 1; i >= 0; i--) {
+        currentCommentName = getCommentName(commentsArray[i]);
+        if (currentCommentName > afterCommentName) {
             afterCommentName = currentCommentName;
         }
     }
 
     // Add new comments to commentsArray if they come after afterCommentName
-    newCommentsObject['comments'].forEach( function( comment ){
+    newCommentsObject['comments'].forEach(function (comment) {
 
-        if( comment['name'] > afterCommentName ){
-            commentsArray.push( comment );
+        if (comment['name'] > afterCommentName) {
+            commentsArray.push(comment);
 
             // Also, increment the subreddit count for the subreddit that this comment belongs to
-            incrementSubredditCommentCount( comment['subreddit'] );
+            incrementSubredditCommentCount(comment['subreddit']);
         }
     });
 
@@ -171,9 +171,9 @@ function addNewCommentsToArray( newCommentsObject, commentsArray ){
 }
 
 // Wrapper function for trimResponseToRelevantData and addNewCommentsToArray to pass to getNewComments
-function callbackWrapper( data ){
+function callbackWrapper(data) {
 
-    trimmedResponse = trimResponseToRelevantData( data );
+    trimmedResponse = trimResponseToRelevantData(data);
     addNewCommentsToArray(trimmedResponse, comments);  // Adds new comments to global object
 
 }
@@ -185,18 +185,18 @@ function callbackWrapper( data ){
 
 
 // Check if a subreddit already exists in the global object
-function returnSubredditIndex( subredditName ){
-    for( var i = 0; i < subreddits.length; i++ ){
-        if( subreddits[i].id === subredditName ) return i;
+function returnSubredditIndex(subredditName) {
+    for (var i = 0; i < subreddits.length; i++) {
+        if (subreddits[i].id === subredditName) return i;
     }
     return false;
 }
 
 // Given a subreddit name, increment its count in the global subreddits object
-function incrementSubredditCommentCount( sub ){
+function incrementSubredditCommentCount(sub) {
 
     // If sub doesn't already exist within the global object, add it
-    if (!( returnSubredditIndex( sub ) )) {
+    if (!(returnSubredditIndex(sub))) {
 
         subreddits.push({
             id: sub,
@@ -211,7 +211,7 @@ function incrementSubredditCommentCount( sub ){
     } else {
 
         // Otherwise increment its count because it just got another comment
-        subreddits[ returnSubredditIndex( sub ) ]['radius'] += 1;
+        subreddits[returnSubredditIndex(sub)]['radius'] += 1;
     }
 
     return;
@@ -224,28 +224,28 @@ function incrementSubredditCommentCount( sub ){
 */
 
 // Returns a string formatted for viewBox
-function getSvgWrapDimensionsForViewBox(){
+function getSvgWrapDimensionsForViewBox() {
 
     // Get the SVG Wrap's dimensions
     var h = $('#svg-wrap').height();
     var w = $('#svg-wrap').width();
 
     // The minimum x and y values should be negative 1/2 * height and width
-    var minx = Math.round( -0.5 * w);
-    var miny = Math.round( -0.5 * h);
+    var minx = Math.round(-0.5 * w);
+    var miny = Math.round(-0.5 * h);
 
     // Return a string formatted for viewBox: min-x, min-y, width, height
     return minx + ' ' + miny + ' ' + w + ' ' + h;
 }
 
 // When the user clicks the bottom button
-$('#startStopButton').on('click', function(){
+$('#startStopButton').on('click', function () {
 
     // If the user just opened the site (there's still the introduction)
-    if( $('#svg-wrap').has( 'p' ) ){
+    if ($('#svg-wrap').has('p')) {
 
         // Clear the introduction and instructions
-        $('#svg-wrap').children().fadeOut(250).promise().done(function(){
+        $('#svg-wrap').children().fadeOut(250).promise().done(function () {
             $('#svg-wrap').children().remove();
 
             // Make the SVG wrap fill the page
@@ -267,19 +267,30 @@ $('#startStopButton').on('click', function(){
             // Initial simulation setup
             simulation
                 .force('attract', d3.forceManyBody().strength(-20))  // Attractive force for nodes
-                .force('centerX', d3.forceX(0).strength(.4))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
-                .force('centerY', d3.forceY(0).strength(.4))
-                .force('collide', d3.forceCollide( function(d){ return d.radius; }));  // Collision
+                .force('centerX', d3.forceX(0).strength(.25))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
+                .force('centerY', d3.forceY(0).strength(.25))
+                .force('collide', d3.forceCollide(function (d) { return d.radius + 1; }));  // Collision
 
             // Create a data join for bubbles
             var bubble = svg.append('g')
                 .attr('class', 'bubbles')
-              .selectAll('circle')
-              .data(subreddits)
-              .enter().append('circle')
-                .attr('r', function(d) { return d.radius; })
-                .attr("fill", function(d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
-                .attr('subreddit', function(d) { return d.id; })  // Give the buble a "subreddit" attribute with the subreddit id
+                .selectAll('circle')
+                .data(subreddits)
+                .enter()
+
+                // Put link elements over all of the bubbles to create popovers
+                .append('a')
+                .attr('data-toggle', 'popover')
+                .attr('title', function (d) { return d.id; })
+                .attr('data-content', generatePopoverContents) // Custom function defined later that takes 
+                .attr('data-container', '.container-fluid')
+                .attr('data-html', 'true')
+
+                // Put circles inside the links with some radius and color
+                .append('circle')
+                .attr('r', function (d) { return d.radius; })
+                .attr("fill", function (d) { return color(Math.floor(Math.random() * 20)); }) // Randomize color
+
 
                 // Drag functionality
                 .call(d3.drag()
@@ -287,13 +298,16 @@ $('#startStopButton').on('click', function(){
                     .on("drag", dragged)
                     .on("end", dragended));
 
+            //Initialize popovers
+            $('[data-toggle="popover"]').popover();
+
             // Set the nodes for the simulation and also the tick behavior (update bubbles position)
             simulation
-                .nodes( subreddits )
-                .on('tick', function(e){
+                .nodes(subreddits)
+                .on('tick', function (e) {
                     bubble
-                        .attr("cx", function(d) { return d.x; })
-                        .attr("cy", function(d) { return d.y; });
+                        .attr("cx", function (d) { return d.x; })
+                        .attr("cy", function (d) { return d.y; });
                 });
 
             // Drag functionality
@@ -301,18 +315,18 @@ $('#startStopButton').on('click', function(){
                 if (!d3.event.active) simulation.alphaTarget(0.3).restart();
                 d.fx = d.x;
                 d.fy = d.y;
-                }
+            }
 
-                function dragged(d) {
+            function dragged(d) {
                 d.fx = d3.event.x;
                 d.fy = d3.event.y;
-                }
+            }
 
-                function dragended(d) {
+            function dragended(d) {
                 if (!d3.event.active) simulation.alphaTarget(0);
                 d.fx = null;
                 d.fy = null;
-                }
+            }
         });
     }
 
@@ -321,7 +335,7 @@ $('#startStopButton').on('click', function(){
     $(this).toggleClass('btn-outline-danger');
 
     // If the button is btn-success then it shouldn't be getting comments
-    if( $(this).hasClass('btn-success') ){
+    if ($(this).hasClass('btn-success')) {
         $(this).text('Get Comments');
 
         commentGetter.stop();
@@ -337,7 +351,7 @@ $('#startStopButton').on('click', function(){
 });
 
 // Resize the SVG when the window is resized
-$(window).on('resize', function(){
+$(window).on('resize', function () {
 
     // Set the height for the wrapper
     var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
@@ -348,7 +362,7 @@ $(window).on('resize', function(){
 });
 
 // Reset the visualization when "reset visualization" is clicked
-$('.reset-visualization').on('click', function(){
+$('.reset-visualization').on('click', function () {
 
     // Clear the subreddits and comments data
     subreddits = [];
@@ -358,3 +372,19 @@ $('.reset-visualization').on('click', function(){
     simulation.restart();
 
 })
+
+// Popover the bubble information when they're clicked
+function generatePopoverContents(d) {
+    return "hello hi aoijfeaoiejf aoisejf oisaj feoij fiofj eoif jaeoif jaseoif jesiof sjoef oisefj soifj soifj soief jsoif jsofi jsoif jseoif jseo isje "
+}
+
+// Remove popovers when the user clicks outside of one
+// https://stackoverflow.com/a/20468809/6894799
+$('body').on('click', function (e) {
+    $('[data-toggle=popover]').each(function () {
+        // hide any open popovers when the anywhere else in the body is clicked
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+        }
+    });
+});
