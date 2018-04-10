@@ -15,3 +15,7 @@ html {
   .popover-body ul {
     max-height: 350px;
     overflow-y: auto; }
+
+circle:hover {
+  stroke: black;
+  stroke-width: 1.5; }

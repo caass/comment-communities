@@ -31,3 +31,12 @@ html {
     }
 
 }
+
+circle {
+
+    &:hover {
+        stroke: black;
+        stroke-width: 1.5;
+    }
+
+}
