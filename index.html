@@ -32,7 +32,7 @@
 
 <body>
     <nav class="navbar navbar-expand-sm navbar-light bg-light">
-        <a class="navbar-brand" href="http://localhost:5000/">
+        <a class="navbar-brand" href="http://localhost:3000/">
             <img src="assets/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
         </a>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -42,6 +42,11 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link reset-visualization">Reset Visualization</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button id='startStopButton' type="button" class="btn btn-success">Get comments</button>
                 </li>
             </ul>
         </div>
@@ -93,9 +98,6 @@
             Constantly. By checking all the new comment activity on Reddit, we can group incoming comments by their Subreddit
             and visualize the activity in real time. Use the navigation bar above to learn more about the project, view the
             source code, or to reset the visualization. Click the button below to start it up</p>
-    </div>
-    <div class='fixed-bottom text-center p-3'>
-        <button id='startStopButton' type="button" class="btn btn-success">Get comments</button>
     </div>
 </body>
 

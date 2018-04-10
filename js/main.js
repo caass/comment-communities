@@ -29,7 +29,7 @@ class getNewComments {
         let callback = this.callback;
         this.gettingComments = true;
         while (this.gettingComments) {
-            await sleep(1000)
+            await sleep(1000);
             d3.json('https://www.reddit.com/r/all/comments/.json?limit=100', function (error, data) {
                 if (error) {
                     throw error;
@@ -111,7 +111,7 @@ function addNewCommentsToArray(newCommentsObject) {
 
     // Generate a random color from D3 Palette
     let color = d3.scaleOrdinal(d3.schemeCategory20);
-    function randomColor(){      
+    function randomColor() {
         return color(Math.floor(Math.random() * 20));
     }
 
@@ -161,11 +161,20 @@ function addNewCommentsToArray(newCommentsObject) {
 
 }
 
-// Wrapper function for trimResponseToRelevantData and addNewCommentsToArray to pass to getNewComments
+// Update the simulation with the new data
+function updateBubbles() {
+
+    console.log('update');
+    simulation.restart();
+
+}
+
+// All-In-One Data Trimmer, Comments Adder, Bubbles Updater. Pass to getNewComments
 function callbackWrapper(data) {
 
     trimmedResponse = trimResponseToRelevantData(data);
     addNewCommentsToArray(trimmedResponse);
+    updateBubbles();
 
 }
 
@@ -199,7 +208,7 @@ $('#startStopButton').on('click', function () {
             $('#svg-wrap').children().remove();
 
             // Make the SVG wrap fill the page
-            var heightUnderNav = $(window).height() - $('.navbar').outerHeight()
+            var heightUnderNav = $(window).height() - $('.navbar').outerHeight();
             $('#svg-wrap').height(heightUnderNav);
             $('#svg-wrap').css('padding', '0');
 
@@ -215,14 +224,14 @@ $('#startStopButton').on('click', function () {
 
             // Initial simulation setup
             simulation
-                .force('repel', d3.forceManyBody().strength(-15))  // Make the nodes repel each other
+                .force('repel', d3.forceManyBody().strength(-20))  // Make the nodes repel each other
                 .force('centerX', d3.forceX(0).strength(.3))  // Center will always be at 0, 0 because of getSvgWrapDimensionsForViewBox()
                 .force('centerY', d3.forceY(0).strength(.3))
-                .force('collide', d3.forceCollide(function (d) { return d.radius + Math.round(Math.sqrt(d.radius) / 2); }));  // Collision
+                .force('collide', d3.forceCollide(function (d) { return d.radius + Math.sqrt(d.radius); }));  // Collision
 
             // Create a data join for bubbles
-            var bubble = svg.append('g')
-                .attr('class', 'bubbles')
+            let g = svg.append('g').attr('class', 'bubbles');
+            let bubble = g
                 .selectAll('circle')
                 .data(subreddits)
                 .enter()
@@ -230,10 +239,10 @@ $('#startStopButton').on('click', function () {
                 // Put link elements over all of the bubbles to create popovers
                 .append('a')
                 .attr('data-toggle', 'popover')
-                .attr('title', function (d) { return d.id; })
-                .attr('data-content', generatePopoverContents) // Custom function defined later that takes 
-                .attr('data-container', '.container-fluid')
-                .attr('data-html', 'true')
+                .attr('title', function (d) { return d.id; })   // Title according to subreddit
+                .attr('data-content', generatePopoverContents)  // Create contents from the comments in the subreddit
+                .attr('data-container', '.container-fluid')     // The parent needs to be the container, since the SVG won't hold it
+                .attr('data-html', 'true')                      // Render HTML inside the popover
 
                 // Put circles inside the links with some radius and color
                 .append('circle')
@@ -288,6 +297,7 @@ $('#startStopButton').on('click', function () {
         $(this).text('Get Comments');
 
         commentGetter.stop();
+        simulation.alphaTarget(0.4).restart();
 
     } else {
 
