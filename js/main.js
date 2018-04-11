@@ -189,35 +189,7 @@ function updateBubbles() {
         // Put circles inside the links with some radius and color
         .append('circle')
         .attr('r', function (d) { return d.radius; })
-        .attr("fill", function (d) { return d.color; })
-
-
-        // Drag functionality
-        .call(d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended));
-
-    //Initialize popovers
-    $('[data-toggle="popover"]').popover();
-
-    // Drag functionality
-    function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    function dragged(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
-    }
-
-    function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-    }
+        .attr("fill", function (d) { return d.color; });
 
     simulation
         .nodes(subreddits)
@@ -237,7 +209,11 @@ function callbackWrapper(data) {
 
     trimmedResponse = trimResponseToRelevantData(data);
     addNewCommentsToArray(trimmedResponse);
-    updateBubbles();
+
+    // This is kind of a trash workaround but...if the user clicked "Stop" then don't update the bubbles.
+    if (commentGetter.gettingComments) {
+        updateBubbles();
+    }
 
 }
 
@@ -310,14 +286,7 @@ $('#startStopButton').on('click', function () {
                 // Put circles inside the links with some radius and color
                 .append('circle')
                 .attr('r', function (d) { return d.radius; })
-                .attr("fill", function (d) { return d.color; })
-
-
-                // Drag functionality
-                .call(d3.drag()
-                    .on("start", dragstarted)
-                    .on("drag", dragged)
-                    .on("end", dragended));
+                .attr("fill", function (d) { return d.color; });
 
             //Initialize popovers
             $('[data-toggle="popover"]').popover();
@@ -332,23 +301,6 @@ $('#startStopButton').on('click', function () {
                         .attr('r', function (d) { return d.radius; });
                 });
 
-            // Drag functionality
-            function dragstarted(d) {
-                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
-
-            function dragged(d) {
-                d.fx = d3.event.x;
-                d.fy = d3.event.y;
-            }
-
-            function dragended(d) {
-                if (!d3.event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }
         });
     }
 
@@ -361,7 +313,7 @@ $('#startStopButton').on('click', function () {
         $(this).text('Get Comments');
 
         commentGetter.stop();
-        simulation.alphaTarget(0.4).restart();
+        simulation.alphaTarget(0).restart();
 
     } else {
 
@@ -391,7 +343,7 @@ $('.reset-visualization').on('click', function () {
     subreddits = [];
 
     // TODO: Also make the SVG empty? maybe my forcing the simulation to update?
-    simulation.restart();
+    d3.select('g').remove();
 
 })
 
