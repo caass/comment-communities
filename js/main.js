@@ -165,7 +165,70 @@ function addNewCommentsToArray(newCommentsObject) {
 function updateBubbles() {
 
     console.log('update');
-    simulation.restart();
+
+    let svg = d3.select('svg');
+    let g = d3.select('g');
+
+    let bubble = g
+        .selectAll('circle')
+        .data(subreddits);
+
+    bubble.exit().remove();
+
+    bubble
+        .enter()
+
+        // Put link elements over all of the bubbles to create popovers
+        .append('a')
+        .attr('data-toggle', 'popover')
+        .attr('title', function (d) { return d.id; })   // Title according to subreddit
+        .attr('data-content', generatePopoverContents)  // Create contents from the comments in the subreddit
+        .attr('data-container', '.container-fluid')     // The parent needs to be the container, since the SVG won't hold it
+        .attr('data-html', 'true')                      // Render HTML inside the popover
+
+        // Put circles inside the links with some radius and color
+        .append('circle')
+        .attr('r', function (d) { return d.radius; })
+        .attr("fill", function (d) { return d.color; })
+
+
+        // Drag functionality
+        .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+
+    //Initialize popovers
+    $('[data-toggle="popover"]').popover();
+
+    // Drag functionality
+    function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    simulation
+        .nodes(subreddits)
+        .on('tick', function (e) {
+            bubble
+                .attr("cx", function (d) { return d.x; })
+                .attr("cy", function (d) { return d.y; })
+                .attr('r', function (d) { return d.radius; })
+        });
+
+    simulation.alphaTarget(0.4).restart();
 
 }
 
@@ -220,7 +283,7 @@ $('#startStopButton').on('click', function () {
             // Create the skeleton of the visualization, to put content in later
             // Based off of https://bl.ocks.org/mbostock/4062045
 
-            var svg = d3.select('svg');
+            let svg = d3.select('svg');
 
             // Initial simulation setup
             simulation
@@ -265,7 +328,8 @@ $('#startStopButton').on('click', function () {
                 .on('tick', function (e) {
                     bubble
                         .attr("cx", function (d) { return d.x; })
-                        .attr("cy", function (d) { return d.y; });
+                        .attr("cy", function (d) { return d.y; })
+                        .attr('r', function (d) { return d.radius; });
                 });
 
             // Drag functionality
