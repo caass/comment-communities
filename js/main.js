@@ -213,6 +213,7 @@ function callbackWrapper(data) {
     // This is kind of a trash workaround but...if the user clicked "Stop" then don't update the bubbles.
     if (commentGetter.gettingComments) {
         updateBubbles();
+        updateBubbles();  // Ok also you need to update twice to like unstick the center bubbles? Idk
     }
 
 }

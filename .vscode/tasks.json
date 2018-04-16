@@ -18,6 +18,12 @@
             "dependsOn": "Compile SCSS"
         },
         {
+            "label": "Uglify JS",
+            "type": "shell",
+            "command": "uglifyjs js/main.js -co js/main.min.js",
+            "group": "build"
+        },
+        {
             "label": "Host Local Server",
             "type": "shell",
             "command": "lite-server --port 5000",
@@ -26,7 +32,8 @@
                 "isDefault": true
             },
             "dependsOn": [
-                "Minify CSS"
+                "Minify CSS",
+                "Uglify JS"
             ]
         }
     ]
