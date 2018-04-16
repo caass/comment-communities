@@ -1,0 +1,25 @@
+{
+  "name": "comment-communities-dev",
+  "version": "1.0.0",
+  "description": "All the node packages you need to automically compile scss and host the site",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gt-big-data/comment-communities.git"
+  },
+  "author": "Mahima Chander, Daniel Fridkin, Davon Prewitt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gt-big-data/comment-communities/issues"
+  },
+  "homepage": "https://github.com/gt-big-data/comment-communities#readme",
+  "dependencies": {
+    "css-minify": "^1.0.1",
+    "lite-server": "^2.3.0",
+    "node-sass": "^4.8.3",
+    "uglify-es": "github:mishoo/UglifyJS2#harmony"
+  }
+}
