@@ -30,6 +30,8 @@
     "build/*"
   ],
   "devDependencies": {
+    "@types/d3-force": "^1.2.1",
+    "@types/d3-timer": "^1.0.9",
     "@types/jest": "^23.3.10",
     "@types/webpack-env": "^1.13.9",
     "css-loader": "^1.0.1",
@@ -53,6 +55,8 @@
     "typings-for-css-modules-loader": "^1.7.0"
   },
   "dependencies": {
+    "d3-force": "^2.0.1",
+    "d3-timer": "^1.0.10",
     "preact": "^10.0.0",
     "preact-feather": "^4.0.0"
   },
