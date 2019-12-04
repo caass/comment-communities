@@ -9,7 +9,6 @@ import Visualization from './visualization'
 const App: preact.FunctionalComponent = () => {
 
     const colors: { [subreddit: string]: string } = {}
-    let clicked = false
 
     const [nodes, updateNodes] = useState<CommentNode[]>([])
     const wrapper = useRef<HTMLDivElement>()
@@ -45,11 +44,11 @@ const App: preact.FunctionalComponent = () => {
     }
 
     return (
-        <div className={'container ' + (!clicked || !wrapper.current ? '' : visualizationWrapper)} ref={wrapper}>
-            {!clicked || !wrapper.current ? <Intro /> : <Visualization nodes={nodes} wrapper={wrapper.current} />}
+        <div className={'container ' + (nodes.length === 0 ? '' : visualizationWrapper)} ref={wrapper}>
+            {nodes.length === 0 ? <Intro /> : <Visualization nodes={nodes} wrapper={wrapper.current} />}
             <GetCommentsButton
                 newCommentsHandler={newCommentsHandler}
-                clickHandler={() => clicked = true}
+                clickHandler={console.log}
             />
         </div>
     )
