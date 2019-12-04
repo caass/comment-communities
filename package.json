@@ -11,8 +11,7 @@
     "serve": "preact build && preact serve",
     "dev": "preact watch",
     "lint": "tslint --project src",
-    "test": "jest ./tests",
-    "precommit": "lint-staged"
+    "test": "jest ./tests"
   },
   "lint-staged": {
     "*.{js,jsx,css,md,scss}": [
@@ -92,6 +91,11 @@
       "^react-dom$": "preact-compat",
       "^create-react-class$": "preact-compat/lib/create-react-class",
       "^react-addons-css-transition-group$": "preact-css-transition-group"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
   }
 }
