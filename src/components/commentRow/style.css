@@ -1,0 +1,25 @@
+.comment-row-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    padding: 1rem;
+    overflow: hidden;
+    height: 40px;
+    position: relative;
+    display: block;
+}
+
+.comment-row-card:nth-of-type(even) {
+    background-color: #bbb;
+}
+
+.comment-metadata {
+    order: 0;
+    font-size: 1rem;
+}
+
+.comment-body {
+    order: 1;
+    margin: 0.5rem;
+}
