@@ -2,6 +2,7 @@ import { h } from 'preact'
 import { Pause, Play } from 'preact-feather'
 import { useEffect, useState } from 'preact/hooks'
 import { CommentsChunk, getComments } from '../common'
+import { getCommentsButton } from './style.css'
 
 const GetCommentsButton: preact.FunctionalComponent<{
     newCommentsHandler: (chunk: CommentsChunk) => Promise<string>,
@@ -42,7 +43,7 @@ const GetCommentsButton: preact.FunctionalComponent<{
     }
 
     return (
-        <button onClick={onClick}>
+        <button className={getCommentsButton} onClick={onClick}>
             {gettingComments ? <Pause /> : <Play />} {gettingComments ? ' Stop' : ' Start'}
         </button>
     )
