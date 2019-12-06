@@ -1,3 +1,4 @@
+import CommentLink from './CommentLink'
 import CommentNode from './CommentNode'
 import CommentsChunk from "./CommentsChunk";
 import { getCommentsFromJsonResponse, okResponse } from "./handleFetch";
@@ -10,4 +11,4 @@ const getComments = async (cursor?: string): Promise<CommentsChunk> => {
         .then(r => getCommentsFromJsonResponse(r, cursor));
 };
 
-export { RedditComment, getComments, CommentsChunk, CommentNode, SubredditJsonResponse };
+export { RedditComment, getComments, CommentsChunk, CommentLink, CommentNode, SubredditJsonResponse };
